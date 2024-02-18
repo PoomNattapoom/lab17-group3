@@ -8,15 +8,14 @@ import {
   messageType,
 } from "../store/Slices/webSocketSlice.ts";
 import JoinLeaveMessage from "./joinLeaveMessage.tsx";
-import { IntegerType } from "mongodb";
 
-let count = 0;
 export default function ChatBox() {
-  let [person, setPerson] = useState<IntegerType>(0);
+  let online_person = 0;
   const { sendMessage } = useWebSocket();
   const [typedMessage, setTypedMessage] = useState<string>("");
   const username = useAppSelector(selectUsername);
   const webSocketState = useAppSelector(selectWebSocket);
+
   return (
     <>
       <div className="bg-white w-full rounded-lg shadow-lg p-4">
@@ -24,7 +23,16 @@ export default function ChatBox() {
           <h1 className="text-3xl font-extrabold text-gray-800">Group Chat</h1>
           <p className="text-gray-600">Welcome to the chat room!</p>
           <p>
-            Online persons : <strong>{person}</strong>
+            {webSocketState.messages?.map((message) => {
+              if (
+                message.type === messageType.JOIN ||
+                message.type === messageType.LEAVE
+              ) {
+                online_person = message.personCount;
+              }
+              return "";
+            })}
+            Online persons : <strong>{online_person}</strong>
           </p>
         </div>
 
@@ -68,8 +76,7 @@ export default function ChatBox() {
             />
             <button
               className="ml-2 bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
-              type="submit"
-              onClick={() => setPerson(++count)}>
+              type="submit">
               Send
             </button>
           </form>
